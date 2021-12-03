@@ -10,26 +10,25 @@ using std::istringstream;
 using std::string;
 using std::vector;
 
-enum class State {kEmpty, kObstacle};
+enum class State { kEmpty, kObstacle };
 
 vector<State> ParseLine(string line) {
-    istringstream sline(line);
-    int n;
-    char c;
-    vector<State> row;
-    while (sline >> n >> c && c == ',') {
-      if (n == 0) {
-        row.push_back(State::kEmpty);
-      } else {
-        row.push_back(State::kObstacle);
-      }
+  istringstream sline(line);
+  int n;
+  char c;
+  vector<State> row;
+  while (sline >> n >> c && c == ',') {
+    if (n == 0) {
+      row.push_back(State::kEmpty);
+    } else {
+      row.push_back(State::kObstacle);
     }
-    return row;
+  }
+  return row;
 }
 
-
 vector<vector<State>> ReadBoardFile(string path) {
-  ifstream myfile (path);
+  ifstream myfile(path);
   vector<vector<State>> board{};
   if (myfile) {
     string line;
@@ -41,16 +40,24 @@ vector<vector<State>> ReadBoardFile(string path) {
   return board;
 }
 
-// TODO: Write the Search function stub here.
-
-
-string CellString(State cell) {
-  switch(cell) {
-    case State::kObstacle: return "*   ";
-    default: return "0   "; 
-  }
+// A* search function.
+// board : 2-dimensional game board
+// init : initial position coordinates
+// goal : goal position coordinates
+vector<vector<State>> Search(const vector<vector<State>> board, int *init,
+                             int *goal) {
+  cout << "No path found!\n";
+  return vector<vector<State>>();
 }
 
+string CellString(State cell) {
+  switch (cell) {
+    case State::kObstacle:
+      return "*   ";
+    default:
+      return "0   ";
+  }
+}
 
 void PrintBoard(const vector<vector<State>> board) {
   for (int i = 0; i < board.size(); i++) {
@@ -61,11 +68,18 @@ void PrintBoard(const vector<vector<State>> board) {
   }
 }
 
-
 int main() {
-  // TODO: Declare "init" and "goal" arrays with values {0, 0} and {4, 5} respectively.
+  // Initial coordinates
+  int init[] = {0, 0};
+
+  // Goal coordinates
+  int goal[] = {4, 5};
+
+  // Read and store board from file
   auto board = ReadBoardFile("1.board");
-  // TODO: Call Search with "board", "init", and "goal". Store the results in the variable "solution".
-  // TODO: Change the following line to pass "solution" to PrintBoard.
-  PrintBoard(board);
+
+  // Find A* 'best' path heuristic solution
+  vector<vector<State>> solution = Search(board, init, goal);
+
+  PrintBoard(solution);
 }
