@@ -10,7 +10,14 @@ using std::istringstream;
 using std::string;
 using std::vector;
 
-enum class State { kEmpty, kObstacle };
+enum class State { kEmpty, kObstacle, kClosed };
+
+void AddToOpen(int x, int y, int g, int h, vector<vector<int>> &open,
+               vector<vector<State>> &grid) {
+  vector<int> node = {x, y, g, h};
+  open.push_back(node);
+  grid[x][y] = State::kClosed;
+}
 
 vector<State> ParseLine(string line) {
   istringstream sline(line);
@@ -42,21 +49,31 @@ vector<vector<State>> ReadBoardFile(string path) {
 
 /**
  * Heuristic function.
+ * Calculate the manhattan distance.
  */
 int Heuristic(int x1, int y1, int x2, int y2) {
   return std::abs(x2 - x1) + std::abs(y2 - y1);
 }
 
 /**
- * A* search function.
- * board : 2-dimensional game board
- * init : initial position coordinates
- * goal : goal position coordinates
+ * A* search algorithm.
  */
-vector<vector<State>> Search(const vector<vector<State>> board, int *init,
-                             int *goal) {
+vector<vector<State>> Search(vector<vector<State>> grid, int init[2],
+                             int goal[2]) {
+  // Create vector of open nodes.
+  vector<vector<int>> open {};
+
+  // Initialize the starting node.
+  int x = init[0];
+  int y = init[1];
+  int g = 0;
+  int h = Heuristic(x, y, goal[0], goal[1]);
+  AddToOpen(x, y ,g ,h, open, grid);
+
+
+
   cout << "No path found!\n";
-  return vector<vector<State>>();
+  return vector<vector<State>>{};
 }
 
 string CellString(State cell) {
@@ -77,12 +94,14 @@ void PrintBoard(const vector<vector<State>> board) {
   }
 }
 
+#include "test.cpp"
+
 int main() {
   // Initial coordinates
-  int init[] = {0, 0};
+  int init[2] = {0, 0};
 
   // Goal coordinates
-  int goal[] = {4, 5};
+  int goal[2] = {4, 5};
 
   // Read and store board from file
   auto board = ReadBoardFile("1.board");
@@ -90,5 +109,11 @@ int main() {
   // Find A* 'best' path heuristic solution
   vector<vector<State>> solution = Search(board, init, goal);
 
+  // Print solution
   PrintBoard(solution);
+
+  //Tests
+  TestHeuristic();
+  TestAddToOpen();
+
 }
