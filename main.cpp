@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -9,8 +10,9 @@ using std::ifstream;
 using std::istringstream;
 using std::string;
 using std::vector;
+using std::sort;
 
-enum class State { kEmpty, kObstacle, kClosed };
+enum class State { kEmpty, kObstacle, kClosed, kPath };
 
 void AddToOpen(int x, int y, int g, int h, vector<vector<int>> &open,
                vector<vector<State>> &grid) {
@@ -19,8 +21,18 @@ void AddToOpen(int x, int y, int g, int h, vector<vector<int>> &open,
   grid[x][y] = State::kClosed;
 }
 
+/**
+ * Compare the F values of two cells.
+ */
 bool Compare(vector<int> a, vector<int> b) {
   return ((a[2] + a[3]) > (b[2] + b[3]));
+}
+
+/**
+ * Sort the two-dimensional vector of ints int descending order.
+ */
+void CellSort(vector<vector<int>> *v) {
+  sort(v->begin(), v->end(), Compare);
 }
 
 vector<State> ParseLine(string line) {
