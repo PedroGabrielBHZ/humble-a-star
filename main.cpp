@@ -40,10 +40,19 @@ vector<vector<State>> ReadBoardFile(string path) {
   return board;
 }
 
-// A* search function.
-// board : 2-dimensional game board
-// init : initial position coordinates
-// goal : goal position coordinates
+/**
+ * Heuristic function.
+ */
+int Heuristic(int x1, int y1, int x2, int y2) {
+  return std::abs(x2 - x1) + std::abs(y2 - y1);
+}
+
+/**
+ * A* search function.
+ * board : 2-dimensional game board
+ * init : initial position coordinates
+ * goal : goal position coordinates
+ */
 vector<vector<State>> Search(const vector<vector<State>> board, int *init,
                              int *goal) {
   cout << "No path found!\n";
