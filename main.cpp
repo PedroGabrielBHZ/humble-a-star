@@ -19,6 +19,10 @@ void AddToOpen(int x, int y, int g, int h, vector<vector<int>> &open,
   grid[x][y] = State::kClosed;
 }
 
+bool Compare(vector<int> a, vector<int> b) {
+  return ((a[2] + a[3]) > (b[2] + b[3]));
+}
+
 vector<State> ParseLine(string line) {
   istringstream sline(line);
   int n;
