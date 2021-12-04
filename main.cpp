@@ -200,9 +200,6 @@ void PrintBoard(const vector<vector<State>> board) {
   }
 }
 
-// Include test file with test functions.
-//#include "test.cpp"
-
 int main() {
   // Initial coordinates
   int init[2] = {0, 0};
@@ -218,9 +215,4 @@ int main() {
 
   // Print solution
   PrintBoard(solution);
-
-  //Tests
-  // TestHeuristic();
-  // TestAddToOpen();
-
 }
