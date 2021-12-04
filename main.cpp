@@ -14,9 +14,14 @@ using std::sort;
 
 enum class State { kEmpty, kObstacle, kClosed, kPath };
 
+/**
+ * Add a node to the open list and mark it as open.
+ */
 void AddToOpen(int x, int y, int g, int h, vector<vector<int>> &open,
                vector<vector<State>> &grid) {
   vector<int> node = {x, y, g, h};
+
+  // Add node to open vector, and mark grid cell as closed.
   open.push_back(node);
   grid[x][y] = State::kClosed;
 }
@@ -29,7 +34,7 @@ bool Compare(vector<int> a, vector<int> b) {
 }
 
 /**
- * Sort the two-dimensional vector of ints int descending order.
+ * Sort the two-dimensional vector of ints in descending order.
  */
 void CellSort(vector<vector<int>> *v) {
   sort(v->begin(), v->end(), Compare);
@@ -86,18 +91,41 @@ vector<vector<State>> Search(vector<vector<State>> grid, int init[2],
   int h = Heuristic(x, y, goal[0], goal[1]);
   AddToOpen(x, y ,g ,h, open, grid);
 
+  while (!open.empty()) {
+
+    // Sort the open list of nodes
+    CellSort(&open);
+
+    // Get the most promising node
+    auto current = open.back();
+
+    // Remove it from nodes to be explored
+    open.pop_back();
+
+    // Get current node coordinates
+    x = current[0];
+    y = current[1];
+
+    // Set current position on grid
+    grid[x][y] = State::kPath;
+
+    // Current position is goal position: end algorithm
+    if (x == goal[0] && y == goal[1]) return grid;
+
+    // Current position is not yet goal position: expand search
+    // ExpandNeighbors
 
 
+  // We've run out of new nodes to explore and haven't found a path.
   cout << "No path found!\n";
   return vector<vector<State>>{};
 }
 
 string CellString(State cell) {
   switch (cell) {
-    case State::kObstacle:
-      return "*   ";
-    default:
-      return "0   ";
+    case State::kObstacle: return "*   ";
+    case State::kPath: return ".   ";
+    default: return "0   ";
   }
 }
 
