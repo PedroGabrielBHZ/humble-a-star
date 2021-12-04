@@ -12,7 +12,7 @@ using std::string;
 using std::vector;
 using std::sort;
 
-enum class State { kEmpty, kObstacle, kClosed, kPath };
+enum class State { kEmpty, kObstacle, kClosed, kPath, kStart, kFinish };
 
 /**
  * Check if a given cell is an allowed move.
@@ -20,7 +20,7 @@ enum class State { kEmpty, kObstacle, kClosed, kPath };
 bool CheckValidCell(int x, int y, vector<vector<State>> grid) {
   if (x < 0 or y < 0) return false;
 
-  if (x > grid.size() || y > grid[0].size()) return false;
+  if (x >= grid.size() || y >= grid[0].size()) return false;
 
   if (grid[x][y] == State::kEmpty) return true; else return false;
 }
@@ -93,6 +93,36 @@ int Heuristic(int x1, int y1, int x2, int y2) {
   return std::abs(x2 - x1) + std::abs(y2 - y1);
 }
 
+// directional deltas
+const int delta[4][2]{{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
+
+/** 
+ * Expand current nodes's neighbors and add them to the open list.
+ */
+void ExpandNeighbors(const vector<int> &current, int goal[2],
+    vector<vector<int>> &open, vector<vector<State>> &grid) {
+  // Get current node's coordinates;
+  int x1 = current[0];
+  int y1 = current[1];
+  int g1 = current[2];
+
+  // Loop through current node's potential neighbors.
+  for (auto d : delta) {
+    int x2 = x1 + d[0];
+    int y2 = y1 + d[1];
+
+    // Check that the potential neighbor's x2 and y2 values
+    // are on the grid and not closed.
+    if (CheckValidCell(x2, y2, grid)) {
+
+      // Increment g value, compute h value, and add neighbor to open list.
+      int g2 = g1 + 1;
+      int h2 = Heuristic(x2, y2, goal[0], goal[1]);
+      AddToOpen(x2, y2, g2, h2, open, grid);
+    }
+  }
+}
+
 /**
  * A* search algorithm.
  */
@@ -106,6 +136,8 @@ vector<vector<State>> Search(vector<vector<State>> grid, int init[2],
   int y = init[1];
   int g = 0;
   int h = Heuristic(x, y, goal[0], goal[1]);
+
+  // Add starting node for search.
   AddToOpen(x, y ,g ,h, open, grid);
 
   while (!open.empty()) {
@@ -114,6 +146,7 @@ vector<vector<State>> Search(vector<vector<State>> grid, int init[2],
     CellSort(&open);
 
     // Get the most promising node
+    //auto current = open.back();
     auto current = open.back();
 
     // Remove it from nodes to be explored
@@ -127,12 +160,15 @@ vector<vector<State>> Search(vector<vector<State>> grid, int init[2],
     grid[x][y] = State::kPath;
 
     // Current position is goal position: end algorithm
-    if (x == goal[0] && y == goal[1]) return grid;
+    if (x == goal[0] && y == goal[1]) {
+      grid[init[0]][init[1]] = State::kStart;
+      grid[goal[0]][goal[1]] = State::kFinish;
+      return grid;
+    }
 
     // Current position is not yet goal position: expand search
-    // ExpandNeighbors
+    ExpandNeighbors(current, goal, open, grid);
   }
-
 
   // We've run out of new nodes to explore and haven't found a path.
   cout << "No path found!\n";
@@ -146,6 +182,8 @@ string CellString(State cell) {
   switch (cell) {
     case State::kObstacle: return "*   ";
     case State::kPath: return ".   ";
+    case State::kStart: return "$   ";
+    case State::kFinish: return "X   ";
     default: return "0   ";
   }
 }
@@ -163,7 +201,7 @@ void PrintBoard(const vector<vector<State>> board) {
 }
 
 // Include test file with test functions.
-#include "test.cpp"
+//#include "test.cpp"
 
 int main() {
   // Initial coordinates
@@ -182,7 +220,7 @@ int main() {
   PrintBoard(solution);
 
   //Tests
-  TestHeuristic();
-  TestAddToOpen();
+  // TestHeuristic();
+  // TestAddToOpen();
 
 }
