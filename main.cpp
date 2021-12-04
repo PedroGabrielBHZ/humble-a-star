@@ -15,6 +15,17 @@ using std::sort;
 enum class State { kEmpty, kObstacle, kClosed, kPath };
 
 /**
+ * Check if a given cell is an allowed move.
+ */
+bool CheckValidCell(int x, int y, vector<vector<State>> grid) {
+  if (x < 0 or y < 0) return false;
+
+  if (x > grid.size() || y > grid[0].size()) return false;
+
+  if (grid[x][y] == State::kEmpty) return true; else return false;
+}
+
+/**
  * Add a node to the open list and mark it as open.
  */
 void AddToOpen(int x, int y, int g, int h, vector<vector<int>> &open,
