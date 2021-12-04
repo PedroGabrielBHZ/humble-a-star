@@ -40,6 +40,9 @@ void CellSort(vector<vector<int>> *v) {
   sort(v->begin(), v->end(), Compare);
 }
 
+/**
+ * Parse a line of the board.
+ */
 vector<State> ParseLine(string line) {
   istringstream sline(line);
   int n;
@@ -55,6 +58,9 @@ vector<State> ParseLine(string line) {
   return row;
 }
 
+/*
+ * Read a 2-dimensional State board from a file path.
+ */
 vector<vector<State>> ReadBoardFile(string path) {
   ifstream myfile(path);
   vector<vector<State>> board{};
@@ -114,6 +120,7 @@ vector<vector<State>> Search(vector<vector<State>> grid, int init[2],
 
     // Current position is not yet goal position: expand search
     // ExpandNeighbors
+  }
 
 
   // We've run out of new nodes to explore and haven't found a path.
@@ -121,6 +128,9 @@ vector<vector<State>> Search(vector<vector<State>> grid, int init[2],
   return vector<vector<State>>{};
 }
 
+/**
+ * Convert a State cell into its string representation.
+ */
 string CellString(State cell) {
   switch (cell) {
     case State::kObstacle: return "*   ";
@@ -129,6 +139,9 @@ string CellString(State cell) {
   }
 }
 
+/**
+ * Print two dimensional board to standard output.
+ */
 void PrintBoard(const vector<vector<State>> board) {
   for (int i = 0; i < board.size(); i++) {
     for (int j = 0; j < board[i].size(); j++) {
@@ -138,6 +151,7 @@ void PrintBoard(const vector<vector<State>> board) {
   }
 }
 
+// Include test file with test functions.
 #include "test.cpp"
 
 int main() {
