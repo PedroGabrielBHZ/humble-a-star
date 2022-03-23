@@ -1,32 +1,48 @@
-
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
+
 using std::cout;
 using std::ifstream;
 using std::istringstream;
+using std::sort;
 using std::string;
 using std::vector;
-using std::sort;
 
 enum class State { kEmpty, kObstacle, kClosed, kPath, kStart, kFinish };
 
 /**
  * Check if a given cell is an allowed move.
+ *
+ * @param x x coordinate
+ * @param y y coordinate
+ * @param grid search grid
+ *
+ * @return whether a cell is a valid position
  */
 bool CheckValidCell(int x, int y, vector<vector<State>> grid) {
-  if (x < 0 or y < 0) return false;
+  if (x < 0 or y < 0)
+    return false;
 
-  if (x >= grid.size() || y >= grid[0].size()) return false;
+  if (x >= grid.size() || y >= grid[0].size())
+    return false;
 
-  if (grid[x][y] == State::kEmpty) return true; else return false;
+  if (grid[x][y] == State::kEmpty)
+    return true;
+  else
+    return false;
 }
 
 /**
  * Add a node to the open list and mark it as open.
+ *
+ * @param x node's x coordinate
+ * @param y node's y coordinate
+ * @param g node's accumulated cost
+ * @param h node's heuristic value
  */
 void AddToOpen(int x, int y, int g, int h, vector<vector<int>> &open,
                vector<vector<State>> &grid) {
@@ -38,18 +54,24 @@ void AddToOpen(int x, int y, int g, int h, vector<vector<int>> &open,
 }
 
 /**
- * Compare the F values of two cells.
+ * Compare the f-values of two nodes.
+ *
+ * @param a first node
+ * @param b second node
+ *
+ * @return true if first node has a f-value greater than the second,
+ * false otherwise.
  */
 bool Compare(vector<int> a, vector<int> b) {
   return ((a[2] + a[3]) > (b[2] + b[3]));
 }
 
 /**
- * Sort the two-dimensional vector of ints in descending order.
+ * Sort inplace a two-dimensional vector of ints in descending order.
+ *
+ * @param v vector of nodes to be sorted
  */
-void CellSort(vector<vector<int>> *v) {
-  sort(v->begin(), v->end(), Compare);
-}
+void CellSort(vector<vector<int>> *v) { sort(v->begin(), v->end(), Compare); }
 
 /**
  * Parse a line of the board.
@@ -69,8 +91,12 @@ vector<State> ParseLine(string line) {
   return row;
 }
 
-/*
- * Read a 2-dimensional State board from a file path.
+/**
+ * Read a 2-dimensional 0-1 board from a file path to a grid of State states.
+ *
+ * @param path path to file to be read
+ *
+ * @return grid of State cells
  */
 vector<vector<State>> ReadBoardFile(string path) {
   ifstream myfile(path);
@@ -86,25 +112,36 @@ vector<vector<State>> ReadBoardFile(string path) {
 }
 
 /**
- * Heuristic function.
- * Calculate the manhattan distance.
+ * Calculate the Manhattan Distance between two points.
+ *
+ * @param x1 current x coordinate
+ * @param y1 current y coordinate
+ * @param x2 goal x coordinate
+ * @param y2 goal y coordinate
+ *
+ * @return the heuristic value for x,y coordinates
  */
 int Heuristic(int x1, int y1, int x2, int y2) {
   return std::abs(x2 - x1) + std::abs(y2 - y1);
 }
 
-// directional deltas
-const int delta[4][2]{{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
-
-/** 
+/**
  * Expand current nodes's neighbors and add them to the open list.
+ *
+ * @param current current node
+ * @param goal goal node x,y coordinates
+ * @param open vector of nodes to be searched
+ * @param grid two dimensional grid of nodes
  */
 void ExpandNeighbors(const vector<int> &current, int goal[2],
-    vector<vector<int>> &open, vector<vector<State>> &grid) {
+                     vector<vector<int>> &open, vector<vector<State>> &grid) {
   // Get current node's coordinates;
   int x1 = current[0];
   int y1 = current[1];
   int g1 = current[2];
+
+  // directional deltas, i.e. possible movement directions
+  const int delta[4][2]{{-1, 0}, {0, -1}, {1, 0}, {0, 1}};
 
   // Loop through current node's potential neighbors.
   for (auto d : delta) {
@@ -125,11 +162,17 @@ void ExpandNeighbors(const vector<int> &current, int goal[2],
 
 /**
  * A* search algorithm.
+ *
+ * @param grid 2-dimensional grid
+ * @param init initial x,y coordinates
+ * @param goal goal x,y coordinates
+ *
+ * @return 2-dimensional grid with search path
  */
 vector<vector<State>> Search(vector<vector<State>> grid, int init[2],
                              int goal[2]) {
   // Create vector of open nodes.
-  vector<vector<int>> open {};
+  vector<vector<int>> open{};
 
   // Initialize the starting node.
   int x = init[0];
@@ -137,26 +180,23 @@ vector<vector<State>> Search(vector<vector<State>> grid, int init[2],
   int g = 0;
   int h = Heuristic(x, y, goal[0], goal[1]);
 
-  // Add starting node for search.
-  AddToOpen(x, y ,g ,h, open, grid);
+  // Add starting node to possible search nodes.
+  AddToOpen(x, y, g, h, open, grid);
 
   while (!open.empty()) {
 
-    // Sort the open list of nodes
+    // Sort nodes to be searched by heuristic value
     CellSort(&open);
 
-    // Get the most promising node
-    //auto current = open.back();
+    // Get most promising node and remove it from open nodes
     auto current = open.back();
-
-    // Remove it from nodes to be explored
     open.pop_back();
 
     // Get current node coordinates
     x = current[0];
     y = current[1];
 
-    // Set current position on grid
+    // Set node's coordinates as path
     grid[x][y] = State::kPath;
 
     // Current position is goal position: end algorithm
@@ -180,11 +220,16 @@ vector<vector<State>> Search(vector<vector<State>> grid, int init[2],
  */
 string CellString(State cell) {
   switch (cell) {
-    case State::kObstacle: return "*   ";
-    case State::kPath: return ".   ";
-    case State::kStart: return "$   ";
-    case State::kFinish: return "X   ";
-    default: return "0   ";
+  case State::kObstacle:
+    return "*   ";
+  case State::kPath:
+    return ".   ";
+  case State::kStart:
+    return "$   ";
+  case State::kFinish:
+    return "X   ";
+  default:
+    return "0   ";
   }
 }
 
